@@ -8,7 +8,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 OUTPUT_FILE = "contrib_totals.txt"
 ORG_NAME = "itcgames"
 THREADS  = 100
-ACCESS_TOKEN = "baef6e5c890db15699c694ab44286d69741df89f"
+ACCESS_TOKEN = "1d776af6afd43666d39da033382b8b8c494d3a72 "
 
 class GitOrgContribTotals:
     def __init__(self, org, threads, access_token):
