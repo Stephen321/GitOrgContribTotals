@@ -6,9 +6,9 @@ import json
 from multiprocessing.dummy import Pool as ThreadPool 
 
 OUTPUT_FILE = "contrib_totals.txt"
-ORG_NAME = "itcgames"
+ORG_NAME = "Netflix"
 THREADS  = 100
-ACCESS_TOKEN = "1d776af6afd43666d39da033382b8b8c494d3a72 "
+ACCESS_TOKEN = "https://github.com/settings/tokens"
 
 class GitOrgContribTotals:
     def __init__(self, org, threads, access_token):
@@ -16,7 +16,7 @@ class GitOrgContribTotals:
         self._org  = org
         self._headers = {
             "authorization":    "token {}".format(access_token),
-            "user-agent":       "stephen321/GitOrgContribTotals"
+            "user-agent":       "Stephen321/GitOrgContribTotals"
         }
 
     def _get_contrib_total(self,member):
@@ -63,6 +63,9 @@ class GitOrgContribTotals:
         #get members on first page return by github api and set path for the next page
         path = "orgs/{}/members".format(self._org)
         link = self._get_org_member_sublist(org_members, path)
+        if not link:
+            #only one page of data
+            return
         match = re.search(r'(organizations.*)>.*next', link)
         path = match.group(1)
         while True:
@@ -78,10 +81,17 @@ class GitOrgContribTotals:
 
     def get_totals(self):
         org_members = self._get_org_members()
-        #threaded call to get total for each organisation member
-        results = self._pool.map(self._get_contrib_total, org_members)
-        #sort in descending order
-        return sorted(results, key=operator.itemgetter(1), reverse=True)
+        results = {}
+
+        if org_members:
+            #threaded call to get total for each organisation member
+            results = self._pool.map(self._get_contrib_total, org_members)
+            #sort in descending order
+            results = sorted(results, key=operator.itemgetter(1), reverse=True)
+        else:
+            print("No organisation members were found...")
+
+        return results
 
 if __name__ == "__main__":
     contribs = GitOrgContribTotals(ORG_NAME, THREADS, ACCESS_TOKEN).get_totals()
