@@ -6,7 +6,7 @@ import json
 from multiprocessing.dummy import Pool as ThreadPool 
 
 OUTPUT_FILE = "contrib_totals.txt"
-ORG_NAME = "org_name"
+ORG_NAME = "org_name_here"
 THREADS  = 100
 ACCESS_TOKEN = "https://github.com/settings/tokens"
 
@@ -36,11 +36,11 @@ class GitOrgContribTotals:
         soup = BeautifulSoup(r.read(), "html.parser")
         contrib_text = soup.find_all("h2", class_="f4 text-normal mb-2")[0].string
         
-        #regex to match against the actuall number 
+        #regex to match against the actual number 
         total = 0
-        match = re.search(r'(\d+) contributions', contrib_text)
+        match = re.search(r'(\d*,?\d+) contributions', contrib_text)
         if match:
-            total = int(match.group(1))
+            total = int(match.group(1).replace(',',''))
     
         return (host + path,total)
 
