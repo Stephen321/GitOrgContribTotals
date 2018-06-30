@@ -6,7 +6,7 @@ import json
 from multiprocessing.dummy import Pool as ThreadPool 
 
 OUTPUT_FILE = "contrib_totals.txt"
-ORG_NAME = "Netflix"
+ORG_NAME = "org_name"
 THREADS  = 100
 ACCESS_TOKEN = "https://github.com/settings/tokens"
 
@@ -16,7 +16,7 @@ class GitOrgContribTotals:
         self._org  = org
         self._headers = {
             "authorization":    "token {}".format(access_token),
-            "user-agent":       "Stephen321/GitOrgContribTotals"
+            "user-agent":       "GitOrgContribTotals/python"
         }
 
     def _get_contrib_total(self,member):
