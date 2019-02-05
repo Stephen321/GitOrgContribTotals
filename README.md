@@ -2,12 +2,8 @@ Use python3 for venv or some other tool to create a virtual enviroment.
 
 run the following to set up virtual env and get depedencies:
 
-*python -m venv venv*  
+*pip install --user pipenv*  
 
-*source venv/Scripts/activate*  
-**OR**  
-*source venv/bin/activate*  
+*pipenv install --dev*  
 
-*pip install Pipfile*  
-
-*python app.py*  
+*pipenv run app.py*  
