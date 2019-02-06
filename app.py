@@ -3,12 +3,16 @@ from bs4 import BeautifulSoup
 import re
 import operator
 import json
+import os
 from multiprocessing.dummy import Pool as ThreadPool 
 
-OUTPUT_FILE = "contrib_totals.txt"
+OUTPUT_FILE = "contrib_totals"
 ORG_NAME = "org_name_here"
 THREADS  = 100
-ACCESS_TOKEN = "https://github.com/settings/tokens"
+
+# https://stackoverflow.com/a/12461944
+# https://github.com/settings/tokens
+ACCESS_TOKEN = os.environ['GIT_ACCESS_TOKEN']
 
 class GitOrgContribTotals:
     def __init__(self, org, threads, access_token):
@@ -34,7 +38,11 @@ class GitOrgContribTotals:
 
         #parse and get html element text containing contribution number
         soup = BeautifulSoup(r.read(), "html.parser")
-        contrib_text = soup.find_all("h2", class_="f4 text-normal mb-2")[0].string
+        all_headers = soup.find("h2", class_="f4 text-normal mb-2")
+        if all_headers:
+            contrib_text = all_headers.string
+        else:
+            contrib_text = ""
         
         #regex to match against the actual number 
         total = 0
@@ -42,7 +50,7 @@ class GitOrgContribTotals:
         if match:
             total = int(match.group(1).replace(',',''))
     
-        return (host + path,total)
+        return (member,total)
 
     def _get_org_member_sublist(self, org_members, path):        
         c = HTTPSConnection("api.github.com")
@@ -81,11 +89,14 @@ class GitOrgContribTotals:
 
     def get_totals(self):
         org_members = self._get_org_members()
-        results = {}
-
+        results = []
         if org_members:
             #threaded call to get total for each organisation member
             results = self._pool.map(self._get_contrib_total, org_members)
+            
+            #for member in org_members:
+            #    results.update([self._get_contrib_total(member)])
+            
             #sort in descending order
             results = sorted(results, key=operator.itemgetter(1), reverse=True)
         else:
@@ -96,7 +107,9 @@ class GitOrgContribTotals:
 if __name__ == "__main__":
     contribs = GitOrgContribTotals(ORG_NAME, THREADS, ACCESS_TOKEN).get_totals()
     #write result to file
-    with open(OUTPUT_FILE, "w") as f:
+    with open(OUTPUT_FILE + ".json", "w") as f:
+        json.dump(contribs, f)
+    with open(OUTPUT_FILE + ".csv", "w") as f:
         for url,total in contribs:
-            f.write("{} :\t\t{}\n".format(url, total))
+            f.write("{},{}\n".format(url, total))
 
